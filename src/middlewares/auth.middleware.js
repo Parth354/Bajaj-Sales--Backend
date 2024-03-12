@@ -5,8 +5,10 @@ import { User } from "../models/user.model.js";
 
 export const verifyJWT = asyncHandler(async (req, res, next) => {
     try {
-        const token = req.body.accessToken || req.header("Authorization")?.replace("Bearer ", "")
-        if(!token) {
+        const authHeader = req.header("Authorization");
+        const token = req.body.accessToken || (authHeader && authHeader.replace("Bearer ", ""));
+
+        if (!token) {
             throw new Apierror(401, "Unauthorized Access")
         }
         const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
