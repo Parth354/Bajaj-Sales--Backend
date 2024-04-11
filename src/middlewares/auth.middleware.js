@@ -6,8 +6,7 @@ import { User } from "../models/user.model.js";
 export const verifyJWT = asyncHandler(async (req, res, next) => {
     try {
         const authHeader = req.header("Authorization");
-        const token = req.body.accessToken || (authHeader && authHeader.replace("Bearer ", ""));
-
+        const token = req?.body.accessToken || (authHeader && authHeader.replace("Bearer ", ""));
         if (!token) {
             throw new Apierror(401, "Unauthorized Access")
         }

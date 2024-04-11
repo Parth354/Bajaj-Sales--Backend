@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs"
+import { Apierror } from "./Apierror.js";
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -13,13 +14,13 @@ const uploadOnCloudinary = async (localFilePath) => {
         const response = await cloudinary.uploader.upload(localFilePath, {
             resource_type: "auto"
         })
-        //file has been uploaded successfully
-        fs.unlinkSync(localFilePath) // remove the locally saved temporary file where upload option failed 
+        fs.unlinkSync(localFilePath)
         return response;
     } catch (error) {
-        fs.unlinkSync(localFilePath) 
+        fs.unlinkSync(localFilePath)
+        throw new Apierror(400,"Avatar Size Too Large")
         return null;
     }
 
 }
-export {uploadOnCloudinary}
+export { uploadOnCloudinary }

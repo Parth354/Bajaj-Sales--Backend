@@ -2,6 +2,8 @@ import { asyncHandler } from "../utilis/asyncHandler.js"
 import { Apierror } from "../utilis/Apierror.js";
 import { User } from "../models/user.model.js";
 import { apiResponse } from "../utilis/apiResponse.js";
+import { uploadOnCloudinary } from "../utilis/cloudinary.js";
+import { Address } from "../models/address.model.js";
 
 
 const options = {
@@ -127,21 +129,35 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 })
 
 const updateUserDetails = asyncHandler(async (req, res) => {
-    const { state, locality, pincode, age, _id } = req.body
+    const { state, locality, pincode, age, _id, phoneNo, address } = req.body
+    if (!_id) throw new Apierror(404, "FormData not Recieved")
     const user = await User.findById(_id)
-    console.log(user)
     if (!user) {
         throw new Apierror(404, "User Not Found")
     }
-    const avatarLocalPath = req?.file.path;
+    const avatarLocalPath = req?.file?.path;
     const avatar = await uploadOnCloudinary(avatarLocalPath)
-    if (state) user.state = state;
-    if (locality) user.locality = locality;
-    if (pincode) user.pincode = pincode;
+    if (!address) {
+        const newAddress = await Address.create({
+            state,
+            locality,
+            pincode
+        })
+        if (newAddress) user.address = newAddress._id
+    }
+
+    const originalAdress = await Address.findById(address)
+    if (originalAdress) {
+        if (locality) originalAdress.locality = locality
+        if (state) originalAdress.state = state
+        if (pincode) originalAdress.pincode = pincode
+        await originalAdress.save({ validateBeforeSave: false })
+    }
+
+    if (phoneNo) user.phoneNumber = phoneNo
     if (age) user.age = age;
     user.avatar = avatar?.url;
     await user.save({ validateBeforeSave: false });
-
     const updatedUser = await User.findById(user._id).select("-password -refreshToken")
 
     return res.status(200).json(
@@ -150,7 +166,7 @@ const updateUserDetails = asyncHandler(async (req, res) => {
 })
 const changeCurrentPassword = asyncHandler(async (req, res) => {
     const { oldPassword, newPassword } = req.body
-     
+
     const user = await User.findById(req.body?._id)
     const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
 
@@ -169,5 +185,5 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 })
 
 
-export { changeCurrentPassword,updateUserDetails, logoutUser, userLogin, registerUser, getCurrentUser }
+export { changeCurrentPassword, updateUserDetails, logoutUser, userLogin, registerUser, getCurrentUser }
 

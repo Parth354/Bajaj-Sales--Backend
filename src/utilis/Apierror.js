@@ -19,4 +19,20 @@ class Apierror extends Error{
     }
    }
 }
-export {Apierror} 
+function errorHandler(err, req, res, next) {
+    if (err instanceof Apierror) {
+        res.status(err.statusCode).json({
+            success: false,
+            message: err.message,
+            errors: err.errors
+        });
+    } else {
+        console.log(err)
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
+}
+
+export {Apierror,errorHandler} 
