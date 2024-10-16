@@ -26,5 +26,5 @@ The backend for Bajaj Sales is a robust and scalable Node.js application designe
 **Clone the repository:**
 
    ```bash
-   git clone https://github.com/yourusername/bajaj-sales-backend.git
+   git clone https://github.com/yourusername/bajajsales--backend.git
    cd bajaj-sales-backend
